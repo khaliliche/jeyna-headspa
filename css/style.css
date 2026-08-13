@@ -1,9 +1,167 @@
+:root {
+  --ivory: #F7F3EF;
+  --ink: #1F1B19;
+  --clay: #B76E4F;
+  --sage: #7A8471;
+  --sand: #E8DED2;
+  --ink-soft: #4A423D;
+}
+
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
+  background: var(--ivory);
+  color: var(--ink);
 }
-h1, h2, .font-serif {
-  font-family: 'Playfair Display', serif;
+
+.font-display, h1, h2, h3 {
+  font-family: 'Cormorant', serif;
 }
-html {
-  scroll-behavior: smooth;
+
+html { scroll-behavior: smooth; }
+
+/* ---------- Nav ---------- */
+.nav-link {
+  position: relative;
+  color: var(--ink-soft);
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -4px;
+  width: 0; height: 1px;
+  background: var(--clay);
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after { width: 100%; }
+.nav-link:hover { color: var(--ink); }
+
+/* ---------- Signature line motif ---------- */
+.line-motif path {
+  fill: none;
+  stroke: var(--clay);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.line-motif.drawn path {
+  stroke-dashoffset: 0;
+}
+
+/* ---------- Reveal on scroll ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Editorial service list ---------- */
+.service-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--sand);
+  overflow: hidden;
+}
+.service-row::before {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -1px;
+  width: 0; height: 1px;
+  background: var(--clay);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.service-row:hover::before { width: 100%; }
+.service-row:hover .service-name { color: var(--clay); }
+.service-name {
+  font-family: 'Cormorant', serif;
+  font-size: 1.6rem;
+  transition: color 0.3s ease;
+}
+.service-desc {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+.service-meta {
+  text-align: right;
+  white-space: nowrap;
+}
+.service-duration {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sage);
+  display: block;
+  margin-bottom: 2px;
+}
+.service-price {
+  font-family: 'Cormorant', serif;
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+
+/* ---------- Masonry gallery ---------- */
+.masonry {
+  column-count: 2;
+  column-gap: 0.75rem;
+}
+@media (min-width: 768px) {
+  .masonry { column-count: 3; }
+}
+.masonry img {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  border-radius: 2px;
+  break-inside: avoid;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  filter: grayscale(15%);
+}
+.masonry img:hover {
+  transform: scale(1.015);
+  filter: grayscale(0%);
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  background: var(--ink);
+  color: var(--ivory);
+  padding: 0.9rem 2.2rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  border-radius: 2px;
+  transition: background 0.3s ease;
+  display: inline-block;
+}
+.btn-primary:hover { background: var(--clay); }
+
+.btn-outline {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 0.85rem 2.1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+.btn-outline:hover { background: var(--ink); color: var(--ivory); }
+
+/* ---------- Eyebrow label ---------- */
+.eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--sage);
+  font-weight: 500;
 }

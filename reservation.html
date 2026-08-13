@@ -5,77 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Réservation | Jeyna Head Spa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-[#fdf6f1] text-[#4a3b34]">
+<body class="bg-[#F7F3EF] text-[#1F1B19]">
 
-<nav class="fixed top-0 w-full z-50 bg-[#fdf6f1]/90 backdrop-blur-md shadow-sm">
+<nav class="fixed top-0 w-full z-50 bg-[#F7F3EF]/95 backdrop-blur-md border-b border-[#E8DED2]">
   <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
     <a href="index.html" class="flex items-center gap-2">
-      <img src="images/logo.png" alt="Jeyna Head Spa" class="h-10 w-10 object-contain">
-      <span class="font-serif text-xl tracking-wide text-[#8a5a44]">Jeyna <span class="font-light">Head Spa</span></span>
+      <img src="images/logo.png" alt="Jeyna Head Spa" class="h-9 w-9 object-contain">
+      <span class="font-display text-xl tracking-wide">Jeyna <span class="font-light italic">Head Spa</span></span>
     </a>
-    <a href="index.html" class="text-sm uppercase tracking-wider hover:text-[#c98b6b]">← Retour au site</a>
+    <a href="index.html" class="text-xs uppercase tracking-widest nav-link">← Retour au site</a>
   </div>
 </nav>
 
 <section class="max-w-4xl mx-auto px-6 pt-32 pb-24">
-  <h1 class="font-serif text-4xl text-[#8a5a44] text-center mb-3">Réserver votre moment</h1>
-  <p class="text-center text-[#a8796a] mb-10 italic">Choisissez une prestation, puis un créneau libre.</p>
+  <p class="eyebrow mb-3 text-center">Réservation en ligne</p>
+  <h1 class="font-display text-4xl md:text-5xl text-center mb-3">Réserver votre moment</h1>
+  <p class="text-center text-[#4A423D] mb-12">Choisissez une prestation, puis un créneau libre.</p>
 
-  <h2 class="font-serif text-xl text-[#8a5a44] mb-4">1. Choisissez votre prestation</h2>
-  <div id="service-cards" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10"></div>
+  <p class="eyebrow mb-4">01 — Votre prestation</p>
+  <div id="service-cards" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-14"></div>
 
   <div id="grid-section" class="hidden">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="font-serif text-xl text-[#8a5a44]">2. Choisissez un créneau</h2>
+      <p class="eyebrow">02 — Votre créneau</p>
       <div class="flex items-center gap-3">
-        <button id="prev-week" class="px-3 py-1 rounded-full border border-[#e6d3c6] hover:bg-[#f6e8de]">←</button>
-        <span id="week-label" class="text-sm"></span>
-        <button id="next-week" class="px-3 py-1 rounded-full border border-[#e6d3c6] hover:bg-[#f6e8de]">→</button>
+        <button id="prev-week" class="w-8 h-8 rounded-full border border-[#E8DED2] hover:bg-[#E8DED2] transition text-sm">←</button>
+        <span id="week-label" class="text-xs uppercase tracking-widest text-[#4A423D]"></span>
+        <button id="next-week" class="w-8 h-8 rounded-full border border-[#E8DED2] hover:bg-[#E8DED2] transition text-sm">→</button>
       </div>
     </div>
-    <div id="grid" class="overflow-x-auto rounded-xl shadow-md bg-white p-2"></div>
-    <p class="text-xs text-[#a8796a] mt-3">🟢 Libre &nbsp;&nbsp; 🔴 Complet &nbsp;&nbsp; ⚪ Fermé</p>
+    <div id="grid" class="overflow-x-auto rounded-sm border border-[#E8DED2] bg-white p-2"></div>
+    <p class="text-xs text-[#4A423D] mt-4 flex gap-6">
+      <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:#7A8471"></span>Libre</span>
+      <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:#B76E4F"></span>Complet</span>
+      <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>Fermé</span>
+    </p>
   </div>
 </section>
 
 <!-- MODAL -->
-<div id="booking-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
-  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-    <h3 class="font-serif text-xl text-[#8a5a44] mb-2">Confirmer la réservation</h3>
-    <p id="modal-summary" class="text-sm text-[#a8796a] mb-4"></p>
+<div id="booking-modal" class="hidden fixed inset-0 bg-[#1F1B19]/60 z-50 flex items-center justify-center px-6">
+  <div class="bg-white rounded-sm shadow-xl p-8 w-full max-w-sm">
+    <p class="eyebrow mb-2">Confirmer</p>
+    <h3 class="font-display text-2xl mb-1">Votre réservation</h3>
+    <p id="modal-summary" class="text-sm text-[#4A423D] mb-6"></p>
     <form id="booking-form" class="space-y-4">
       <div>
-        <label class="block mb-1 text-sm uppercase tracking-wide text-[#8a5a44]">Nom complet</label>
-        <input type="text" id="client-name" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+        <label class="block mb-1 text-xs uppercase tracking-widest text-[#4A423D]">Nom complet</label>
+        <input type="text" id="client-name" required class="w-full border border-[#E8DED2] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#B76E4F] transition">
       </div>
       <div>
-        <label class="block mb-1 text-sm uppercase tracking-wide text-[#8a5a44]">Téléphone</label>
-        <input type="tel" id="client-phone" required placeholder="06 XX XX XX XX" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+        <label class="block mb-1 text-xs uppercase tracking-widest text-[#4A423D]">Téléphone</label>
+        <input type="tel" id="client-phone" required placeholder="06 XX XX XX XX" class="w-full border border-[#E8DED2] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#B76E4F] transition">
       </div>
       <div class="flex gap-3 pt-2">
-        <button type="button" id="modal-cancel" class="flex-1 border border-[#e6d3c6] rounded-full py-2 text-sm">Annuler</button>
-        <button type="submit" class="flex-1 bg-[#8a5a44] text-white rounded-full py-2 text-sm hover:bg-[#6f4636]">Confirmer</button>
+        <button type="button" id="modal-cancel" class="flex-1 btn-outline">Annuler</button>
+        <button type="submit" class="flex-1 btn-primary">Confirmer</button>
       </div>
     </form>
   </div>
 </div>
 
-<footer class="bg-[#8a5a44] text-white text-center py-6 text-sm">
+<footer class="bg-[#1F1B19] text-[#E8DED2] text-center py-8 text-xs border-t border-white/10">
   © 2026 Jeyna Head Spa — Kénitra, Maroc
 </footer>
 
-<!-- CHATBOT WIDGET -->
-<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#8a5a44] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#6f4636]">💬</button>
-<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-[#e6d3c6]">
-  <div class="bg-[#8a5a44] text-white px-4 py-3 font-serif">Jeyna Assistant</div>
+<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#1F1B19] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#B76E4F] transition">💬</button>
+<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-sm shadow-xl flex flex-col overflow-hidden border border-[#E8DED2]">
+  <div class="bg-[#1F1B19] text-white px-4 py-3 font-display text-lg">Jeyna Assistant</div>
   <div id="chat-messages" class="flex flex-col p-3 h-72 overflow-y-auto text-sm"></div>
-  <div class="flex border-t border-[#e6d3c6]">
+  <div class="flex border-t border-[#E8DED2]">
     <input id="chat-input" type="text" placeholder="Posez une question sur les prix..." class="flex-1 px-3 py-2 text-sm focus:outline-none">
-    <button id="chat-send" class="bg-[#8a5a44] text-white px-4 text-sm">Envoyer</button>
+    <button id="chat-send" class="bg-[#1F1B19] text-white px-4 text-sm">Envoyer</button>
   </div>
 </div>
 

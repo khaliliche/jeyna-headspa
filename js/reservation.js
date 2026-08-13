@@ -31,9 +31,9 @@ function getWeekStart(offset) {
 function renderServiceCards() {
   const container = document.getElementById('service-cards');
   container.innerHTML = SERVICES.map(s => `
-    <button data-key="${s.key}" class="service-card border-2 rounded-xl p-4 text-left transition ${selectedService === s.key ? 'border-[#8a5a44] bg-[#f6e8de]' : 'border-[#e6d3c6] bg-white'}">
-      <div class="font-serif text-lg text-[#8a5a44]">${s.label}</div>
-      <div class="text-sm text-[#a8796a]">${s.duration}</div>
+    <button data-key="${s.key}" class="service-card border rounded-sm p-4 text-left transition ${selectedService === s.key ? 'border-[#B76E4F] bg-[#E8DED2]/40' : 'border-[#E8DED2] bg-white hover:border-[#B76E4F]'}">
+      <div class="font-display text-lg">${s.label}</div>
+      <div class="text-xs uppercase tracking-widest text-[#7A8471] mt-1">${s.duration}</div>
       <div class="text-sm font-semibold mt-1">${s.price} MAD</div>
     </button>
   `).join('');
@@ -68,25 +68,28 @@ function renderGrid(days) {
   const times = days[0].slots.map(s => s.time);
 
   let html = '<table class="w-full border-collapse text-xs md:text-sm"><thead><tr>';
-  html += '<th class="p-2 border border-[#e6d3c6] bg-[#f6e8de]"></th>';
+  html += '<th class="p-2 border border-[#E8DED2] bg-[#E8DED2]/40"></th>';
   days.forEach(d => {
-    html += `<th class="p-2 border border-[#e6d3c6] bg-[#f6e8de] font-serif text-[#8a5a44]">${d.label}</th>`;
+    html += `<th class="p-2 border border-[#E8DED2] bg-[#E8DED2]/40 font-display text-[#1F1B19]">${d.label}</th>`;
   });
   html += '</tr></thead><tbody>';
 
   times.forEach((time, i) => {
-    html += `<tr><td class="p-2 border border-[#e6d3c6] bg-[#fdf6f1] font-medium">${time}</td>`;
+    html += `<tr><td class="p-2 border border-[#E8DED2] bg-[#F7F3EF] font-medium">${time}</td>`;
     days.forEach(d => {
       const slot = d.slots[i];
-      let cls = 'bg-gray-100 text-gray-300 cursor-not-allowed';
+      let cls = 'bg-gray-50 text-gray-300 cursor-not-allowed';
       let clickable = false;
       if (slot.status === 'available') {
-        cls = 'bg-green-100 hover:bg-green-200 cursor-pointer text-green-700';
+        cls = 'cursor-pointer transition';
         clickable = true;
       } else if (slot.status === 'full') {
-        cls = 'bg-red-100 text-red-400 cursor-not-allowed';
+        cls = 'cursor-not-allowed';
       }
-      html += `<td class="p-2 border border-[#e6d3c6] text-center ${cls}" ${clickable ? `data-date="${d.date}" data-time="${slot.time}"` : ''}>${clickable ? '●' : '—'}</td>`;
+      let style = '';
+      if (slot.status === 'available') style = 'background:#4A7856; color:white;';
+      else if (slot.status === 'full') style = 'background:#B76E4F; color:white;';
+      html += `<td class="p-2 border border-[#E8DED2] text-center ${cls}" style="${style}" ${clickable ? `data-date="${d.date}" data-time="${slot.time}"` : ''}>${clickable ? '●' : '—'}</td>`;
     });
     html += '</tr>';
   });

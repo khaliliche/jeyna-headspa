@@ -65,8 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function addMsg(html, fromUser) {
     const div = document.createElement("div");
     div.className = fromUser
-      ? "bg-[#8a5a44] text-white self-end ml-auto rounded-lg px-3 py-2 mb-2 max-w-[80%]"
-      : "bg-[#f6e8de] text-[#4a3b34] self-start rounded-lg px-3 py-2 mb-2 max-w-[80%]";
+      ? "bg-[#1F1B19] text-white self-end ml-auto rounded-sm px-3 py-2 mb-2 max-w-[80%]"
+      : "bg-[#E8DED2] text-[#1F1B19] self-start rounded-sm px-3 py-2 mb-2 max-w-[80%]";
     div.innerHTML = html;
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;

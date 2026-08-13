@@ -3,97 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jeyna Head Spa | Kénitra</title>
+<title>Jeyna Head Spa — Rituel capillaire à Kénitra</title>
+<meta name="description" content="Spa capillaire à Kénitra. Soins du cuir chevelu, massages crâniens et rituels naturels. Réservez en ligne.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-[#fdf6f1] text-[#4a3b34]">
+<body class="bg-[#F7F3EF] text-[#1F1B19]">
 
 <!-- NAVBAR -->
-<nav class="fixed top-0 w-full z-50 bg-[#fdf6f1]/90 backdrop-blur-md shadow-sm">
+<nav class="fixed top-0 w-full z-50 bg-[#F7F3EF]/95 backdrop-blur-md border-b border-[#E8DED2]">
   <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
     <div class="flex items-center gap-2">
-      <img src="images/logo.png" alt="Jeyna Head Spa" class="h-10 w-10 object-contain">
-      <span class="font-serif text-xl tracking-wide text-[#8a5a44]">Jeyna <span class="font-light">Head Spa</span></span>
+      <img src="images/logo.png" alt="Jeyna Head Spa" class="h-9 w-9 object-contain">
+      <span class="font-display text-xl tracking-wide">Jeyna <span class="font-light italic">Head Spa</span></span>
     </div>
-    <div class="hidden md:flex gap-8 text-sm uppercase tracking-wider">
-      <a href="#about" class="hover:text-[#c98b6b]">À propos</a>
-      <a href="#gallery" class="hover:text-[#c98b6b]">Réalisations</a>
-      <a href="#location" class="hover:text-[#c98b6b]">Contact</a>
+    <div class="hidden md:flex gap-10 text-xs uppercase tracking-widest">
+      <a href="#about" class="nav-link pb-1">À propos</a>
+      <a href="#services" class="nav-link pb-1">Prestations</a>
+      <a href="#gallery" class="nav-link pb-1">Réalisations</a>
+      <a href="#location" class="nav-link pb-1">Contact</a>
     </div>
-    <a href="reservation.html" class="bg-[#c98b6b] text-white px-5 py-2 rounded-full text-sm hover:bg-[#b3745a] transition">Réserver</a>
+    <a href="reservation.html" class="btn-primary text-xs">Réserver</a>
   </div>
 </nav>
 
 <!-- HERO -->
-<header class="h-screen flex flex-col items-center justify-center text-center px-6 pt-16" style="background: linear-gradient(180deg, #fdf6f1 0%, #f6e8de 100%);">
-  <img src="images/logo.png" alt="Jeyna Head Spa" class="h-24 mb-6">
-  <h1 class="font-serif text-4xl md:text-6xl text-[#8a5a44] mb-4">Jeyna Head Spa</h1>
-  <p class="text-lg md:text-xl italic text-[#a8796a] mb-8">Sublimez vos cheveux, apaisez votre esprit.</p>
-  <a href="reservation.html" class="bg-[#8a5a44] text-white px-8 py-3 rounded-full uppercase tracking-wider text-sm hover:bg-[#6f4636] transition">Prendre rendez-vous</a>
+<header class="min-h-screen flex items-center px-6 pt-24 pb-16">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full">
+    <div class="reveal">
+      <p class="eyebrow mb-4">Kénitra, Maroc</p>
+      <h1 class="font-display text-5xl md:text-6xl leading-[1.05] mb-6">
+        Sublimez vos<br><span class="italic text-[#B76E4F]">cheveux</span>,<br>apaisez votre esprit.
+      </h1>
+      <p class="text-[#4A423D] leading-relaxed mb-8 max-w-md">
+        Un espace dédié au bien-être du cuir chevelu. Soins naturels, massages crâniens
+        et rituels de relaxation, pensés pour révéler la santé de vos cheveux.
+      </p>
+      <a href="reservation.html" class="btn-primary">Prendre rendez-vous</a>
+    </div>
+    <div class="hidden md:flex justify-center reveal">
+      <svg class="line-motif" width="360" height="440" viewBox="0 0 360 440" xmlns="http://www.w3.org/2000/svg">
+        <path d="M180 20 C 260 60, 300 140, 260 200 C 220 260, 140 240, 130 300 C 122 350, 170 380, 220 400 C 260 415, 300 410, 320 380"/>
+        <path d="M150 40 C 200 90, 210 160, 170 210 C 130 260, 90 250, 80 300 C 72 340, 110 370, 150 390" opacity="0.5"/>
+      </svg>
+    </div>
+  </div>
 </header>
 
 <!-- ABOUT -->
-<section id="about" class="max-w-4xl mx-auto px-6 py-24 text-center">
-  <h2 class="font-serif text-3xl md:text-4xl text-[#8a5a44] mb-6">À propos de nous</h2>
-  <p class="text-base md:text-lg leading-relaxed text-[#5c4a41]">
-    Jeyna Head Spa est un espace dédié au bien-être du cuir chevelu et à la beauté des cheveux, situé au cœur de Kénitra.
-    Entre soins naturels, massages crâniens et rituels de relaxation, nous vous offrons une expérience unique
-    où technique et douceur se rencontrent pour révéler la santé de vos cheveux.
+<section id="about" class="max-w-3xl mx-auto px-6 py-24 reveal">
+  <p class="eyebrow mb-4 text-center">Notre philosophie</p>
+  <h2 class="font-display text-3xl md:text-4xl text-center mb-8">Le rituel avant le résultat</h2>
+  <p class="text-base md:text-lg leading-relaxed text-[#4A423D] text-center">
+    Chez Jeyna, chaque soin commence par le cuir chevelu  la racine de la santé capillaire.
+    Entre gommages naturels au sidr et au ghassoul, fumigation, et massages profonds,
+    nous créons un moment de pause autant qu'un soin technique. Une approche marocaine
+    et naturelle, pensée pour durer.
   </p>
 </section>
 
-<!-- GALLERY -->
-<section id="gallery" class="bg-[#f6e8de] py-24 px-6">
-  <div class="max-w-6xl mx-auto text-center">
-    <h2 class="font-serif text-3xl md:text-4xl text-[#8a5a44] mb-12">Nos réalisations</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <img src="images/work1.jpg" alt="Réalisation 1" class="w-full h-48 object-cover rounded-xl shadow-md">
-      <img src="images/work2.jpg" alt="Réalisation 2" class="w-full h-48 object-cover rounded-xl shadow-md">
-      <img src="images/work3.jpg" alt="Réalisation 3" class="w-full h-48 object-cover rounded-xl shadow-md">
-      <img src="images/work4.jpg" alt="Réalisation 4" class="w-full h-48 object-cover rounded-xl shadow-md">
+<!-- SERVICES -->
+<section id="services" class="bg-[#E8DED2]/40 py-24 px-6 reveal">
+  <div class="max-w-2xl mx-auto">
+    <p class="eyebrow mb-3">Nos prestations</p>
+    <h2 class="font-display text-3xl md:text-4xl mb-10">Head Spa Menu</h2>
+
+    <div class="service-row">
+      <div>
+        <h3 class="service-name">Découverte</h3>
+        <p class="service-desc">Shampoing · Massage crânien · Séchage rapide</p>
+      </div>
+      <div class="service-meta">
+        <span class="service-duration">30 min</span>
+        <span class="service-price">180 MAD</span>
+      </div>
     </div>
+
+    <div class="service-row">
+      <div>
+        <h3 class="service-name">Éveil Scalp</h3>
+        <p class="service-desc">Soin du visage · Shampoing · Soin en profondeur</p>
+      </div>
+      <div class="service-meta">
+        <span class="service-duration">40 min</span>
+        <span class="service-price">250 MAD</span>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div>
+        <h3 class="service-name">Rituel Beldi Naturel</h3>
+        <p class="service-desc">Sidr, ghassoul & plantes · Gommage · Fumigation</p>
+      </div>
+      <div class="service-meta">
+        <span class="service-duration">50 min</span>
+        <span class="service-price">300 MAD</span>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div>
+        <h3 class="service-name">Signature Jeyna</h3>
+        <p class="service-desc">Botox capillaire · Massage approfondi · Soin des mains</p>
+      </div>
+      <div class="service-meta">
+        <span class="service-duration">60 min</span>
+        <span class="service-price">400 MAD</span>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div>
+        <h3 class="service-name">Premium Jeyna</h3>
+        <p class="service-desc">Rituel complet · Massage nuque, épaules & mains</p>
+      </div>
+      <div class="service-meta">
+        <span class="service-duration">90 min</span>
+        <span class="service-price">550 MAD</span>
+      </div>
+    </div>
+
+    <div class="text-center mt-12">
+      <a href="reservation.html" class="btn-outline">Voir les disponibilités</a>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="max-w-6xl mx-auto px-6 py-24 reveal">
+  <p class="eyebrow mb-3 text-center">Nos réalisations</p>
+  <h2 class="font-display text-3xl md:text-4xl mb-12 text-center">L'expérience Jeyna</h2>
+  <div class="masonry">
+    <img src="images/work1.jpg" alt="Réalisation 1">
+    <img src="images/work2.jpg" alt="Réalisation 2">
+    <img src="images/work3.jpg" alt="Réalisation 3">
+    <img src="images/work4.jpg" alt="Réalisation 4">
   </div>
 </section>
 
 <!-- LOCATION / CONTACT -->
-<section id="location" class="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-10 items-center">
-  <div>
-    <h2 class="font-serif text-3xl md:text-4xl text-[#8a5a44] mb-6">Où nous trouver</h2>
-    <p class="mb-2">📍 Résidence Kouta, 1er étage, 4 rue Ibn Tammam, Kénitra, Maroc</p>
-    <p class="mb-6">📞 +212 6 69 55 63 45</p>
-    <div class="flex gap-4">
-      <a href="https://instagram.com/jeyna.headspa" target="_blank" class="bg-[#8a5a44] text-white px-4 py-2 rounded-full text-sm hover:bg-[#6f4636]">Instagram</a>
-      <a href="https://wa.me/212669556345" target="_blank" class="bg-[#25D366] text-white px-4 py-2 rounded-full text-sm hover:opacity-90">WhatsApp</a>
+<section id="location" class="bg-[#1F1B19] text-[#F7F3EF] py-24 px-6 reveal">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <p class="eyebrow mb-3" style="color:#B76E4F">Où nous trouver</p>
+      <h2 class="font-display text-3xl md:text-4xl mb-8">Venez nous rendre visite</h2>
+      <p class="mb-2 text-[#E8DED2]">Résidence Kouta, 1er étage</p>
+      <p class="mb-2 text-[#E8DED2]">4 rue Ibn Tammam, Kénitra, Maroc</p>
+      <p class="mb-8 text-[#E8DED2]">+212 6 69 55 63 45</p>
+      <p class="mb-8 text-xs uppercase tracking-widest text-[#7A8471]">Mardi — Dimanche · 10h00 — 20h00</p>
+      <div class="flex gap-4">
+        <a href="https://instagram.com/jeyna.headspa" target="_blank" class="btn-outline" style="border-color:#F7F3EF;color:#F7F3EF">Instagram</a>
+        <a href="https://wa.me/212669556345" target="_blank" class="btn-outline" style="border-color:#F7F3EF;color:#F7F3EF">WhatsApp</a>
+      </div>
     </div>
-  </div>
-  <div class="rounded-xl overflow-hidden shadow-lg h-80">
-    <iframe
-      src="https://www.google.com/maps?q=Résidence+Kouta+4+rue+Ibn+Tammam+Kénitra&output=embed"
-      width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
-    </iframe>
+    <div class="rounded-sm overflow-hidden h-80">
+      <iframe
+        src="https://www.google.com/maps?q=Résidence+Kouta+4+rue+Ibn+Tammam+Kénitra&output=embed"
+        width="100%" height="100%" style="border:0; filter: grayscale(40%) contrast(1.1);" allowfullscreen="" loading="lazy">
+      </iframe>
+    </div>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="bg-[#8a5a44] text-white text-center py-6 text-sm">
-  © 2026 Jeyna Head Spa — Kénitra, Maroc
+<footer class="bg-[#1F1B19] text-[#E8DED2] text-center py-8 text-xs border-t border-white/10">
+  © 2026 Jeyna Head Spa  Kénitra, Maroc
 </footer>
+
 <!-- CHATBOT WIDGET -->
-<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#8a5a44] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#6f4636]">
-  💬
-</button>
-<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-[#e6d3c6]">
-  <div class="bg-[#8a5a44] text-white px-4 py-3 font-serif">Jeyna Assistant</div>
+<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#1F1B19] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#B76E4F] transition">💬</button>
+<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-sm shadow-xl flex flex-col overflow-hidden border border-[#E8DED2]">
+  <div class="bg-[#1F1B19] text-white px-4 py-3 font-display text-lg">Jeyna Assistant</div>
   <div id="chat-messages" class="flex flex-col p-3 h-72 overflow-y-auto text-sm"></div>
-  <div class="flex border-t border-[#e6d3c6]">
+  <div class="flex border-t border-[#E8DED2]">
     <input id="chat-input" type="text" placeholder="Posez une question sur les prix..." class="flex-1 px-3 py-2 text-sm focus:outline-none">
-    <button id="chat-send" class="bg-[#8a5a44] text-white px-4 text-sm">Envoyer</button>
+    <button id="chat-send" class="bg-[#1F1B19] text-white px-4 text-sm">Envoyer</button>
   </div>
 </div>
 
 <script src="js/chatbot.js"></script>
+<script src="js/motion.js"></script>
 </body>
 </html>
