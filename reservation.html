@@ -21,63 +21,55 @@
   </div>
 </nav>
 
-<section class="max-w-2xl mx-auto px-6 pt-32 pb-24">
+<section class="max-w-4xl mx-auto px-6 pt-32 pb-24">
   <h1 class="font-serif text-4xl text-[#8a5a44] text-center mb-3">Réserver votre moment</h1>
-  <p class="text-center text-[#a8796a] mb-10 italic">Choisissez votre soin, la date, et nous confirmons par WhatsApp.</p>
+  <p class="text-center text-[#a8796a] mb-10 italic">Choisissez une prestation, puis un créneau libre.</p>
 
-  <form id="reservation-form" class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+  <h2 class="font-serif text-xl text-[#8a5a44] mb-4">1. Choisissez votre prestation</h2>
+  <div id="service-cards" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10"></div>
 
-    <div>
-      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Prestation</label>
-      <select id="service" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
-        <option value="">-- Choisir une prestation --</option>
-        <option value="Découverte (30min - 180 MAD)">Découverte — 30 min — 180 MAD</option>
-        <option value="Éveil Scalp (40min - 250 MAD)">Éveil Scalp — 40 min — 250 MAD</option>
-        <option value="Rituel Beldi Naturel (50min - 300 MAD)">Rituel Beldi Naturel — 50 min — 300 MAD</option>
-        <option value="Signature Jeyna (60min - 400 MAD)">Signature Jeyna — 60 min — 400 MAD</option>
-        <option value="Premium Jeyna (90min - 550 MAD)">Premium Jeyna — 90 min — 550 MAD</option>
-      </select>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Date</label>
-        <input type="date" id="date" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
-      </div>
-      <div>
-        <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Heure</label>
-        <input type="time" id="time" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+  <div id="grid-section" class="hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-serif text-xl text-[#8a5a44]">2. Choisissez un créneau</h2>
+      <div class="flex items-center gap-3">
+        <button id="prev-week" class="px-3 py-1 rounded-full border border-[#e6d3c6] hover:bg-[#f6e8de]">←</button>
+        <span id="week-label" class="text-sm"></span>
+        <button id="next-week" class="px-3 py-1 rounded-full border border-[#e6d3c6] hover:bg-[#f6e8de]">→</button>
       </div>
     </div>
-
-    <div>
-      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Nom complet</label>
-      <input type="text" id="name" required placeholder="Votre nom" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
-    </div>
-
-    <div>
-      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Téléphone</label>
-      <input type="tel" id="phone" required placeholder="06 XX XX XX XX" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
-    </div>
-
-    <div>
-      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Remarque (optionnel)</label>
-      <textarea id="note" rows="3" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]"></textarea>
-    </div>
-
-    <button type="submit" class="w-full bg-[#8a5a44] text-white py-3 rounded-full uppercase tracking-wider text-sm hover:bg-[#6f4636] transition">
-      Confirmer via WhatsApp
-    </button>
-  </form>
+    <div id="grid" class="overflow-x-auto rounded-xl shadow-md bg-white p-2"></div>
+    <p class="text-xs text-[#a8796a] mt-3">🟢 Libre &nbsp;&nbsp; 🔴 Complet &nbsp;&nbsp; ⚪ Fermé</p>
+  </div>
 </section>
+
+<!-- MODAL -->
+<div id="booking-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+    <h3 class="font-serif text-xl text-[#8a5a44] mb-2">Confirmer la réservation</h3>
+    <p id="modal-summary" class="text-sm text-[#a8796a] mb-4"></p>
+    <form id="booking-form" class="space-y-4">
+      <div>
+        <label class="block mb-1 text-sm uppercase tracking-wide text-[#8a5a44]">Nom complet</label>
+        <input type="text" id="client-name" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+      </div>
+      <div>
+        <label class="block mb-1 text-sm uppercase tracking-wide text-[#8a5a44]">Téléphone</label>
+        <input type="tel" id="client-phone" required placeholder="06 XX XX XX XX" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="modal-cancel" class="flex-1 border border-[#e6d3c6] rounded-full py-2 text-sm">Annuler</button>
+        <button type="submit" class="flex-1 bg-[#8a5a44] text-white rounded-full py-2 text-sm hover:bg-[#6f4636]">Confirmer</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <footer class="bg-[#8a5a44] text-white text-center py-6 text-sm">
   © 2026 Jeyna Head Spa — Kénitra, Maroc
 </footer>
+
 <!-- CHATBOT WIDGET -->
-<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#8a5a44] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#6f4636]">
-  💬
-</button>
+<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#8a5a44] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#6f4636]">💬</button>
 <div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-[#e6d3c6]">
   <div class="bg-[#8a5a44] text-white px-4 py-3 font-serif">Jeyna Assistant</div>
   <div id="chat-messages" class="flex flex-col p-3 h-72 overflow-y-auto text-sm"></div>
@@ -88,6 +80,6 @@
 </div>
 
 <script src="js/chatbot.js"></script>
-<script src="js/script.js"></script>
+<script src="js/reservation.js"></script>
 </body>
 </html>
