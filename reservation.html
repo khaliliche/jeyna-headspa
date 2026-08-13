@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réservation | Jeyna Head Spa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#fdf6f1] text-[#4a3b34]">
+
+<nav class="fixed top-0 w-full z-50 bg-[#fdf6f1]/90 backdrop-blur-md shadow-sm">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+    <a href="index.html" class="flex items-center gap-2">
+      <img src="images/logo.png" alt="Jeyna Head Spa" class="h-10 w-10 object-contain">
+      <span class="font-serif text-xl tracking-wide text-[#8a5a44]">Jeyna <span class="font-light">Head Spa</span></span>
+    </a>
+    <a href="index.html" class="text-sm uppercase tracking-wider hover:text-[#c98b6b]">← Retour au site</a>
+  </div>
+</nav>
+
+<section class="max-w-2xl mx-auto px-6 pt-32 pb-24">
+  <h1 class="font-serif text-4xl text-[#8a5a44] text-center mb-3">Réserver votre moment</h1>
+  <p class="text-center text-[#a8796a] mb-10 italic">Choisissez votre soin, la date, et nous confirmons par WhatsApp.</p>
+
+  <form id="reservation-form" class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+
+    <div>
+      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Prestation</label>
+      <select id="service" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+        <option value="">-- Choisir une prestation --</option>
+        <option value="Découverte (30min - 180 MAD)">Découverte — 30 min — 180 MAD</option>
+        <option value="Éveil Scalp (40min - 250 MAD)">Éveil Scalp — 40 min — 250 MAD</option>
+        <option value="Rituel Beldi Naturel (50min - 300 MAD)">Rituel Beldi Naturel — 50 min — 300 MAD</option>
+        <option value="Signature Jeyna (60min - 400 MAD)">Signature Jeyna — 60 min — 400 MAD</option>
+        <option value="Premium Jeyna (90min - 550 MAD)">Premium Jeyna — 90 min — 550 MAD</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Date</label>
+        <input type="date" id="date" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+      </div>
+      <div>
+        <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Heure</label>
+        <input type="time" id="time" required class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+      </div>
+    </div>
+
+    <div>
+      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Nom complet</label>
+      <input type="text" id="name" required placeholder="Votre nom" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+    </div>
+
+    <div>
+      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Téléphone</label>
+      <input type="tel" id="phone" required placeholder="06 XX XX XX XX" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]">
+    </div>
+
+    <div>
+      <label class="block mb-2 text-sm uppercase tracking-wide text-[#8a5a44]">Remarque (optionnel)</label>
+      <textarea id="note" rows="3" class="w-full border border-[#e6d3c6] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c98b6b]"></textarea>
+    </div>
+
+    <button type="submit" class="w-full bg-[#8a5a44] text-white py-3 rounded-full uppercase tracking-wider text-sm hover:bg-[#6f4636] transition">
+      Confirmer via WhatsApp
+    </button>
+  </form>
+</section>
+
+<footer class="bg-[#8a5a44] text-white text-center py-6 text-sm">
+  © 2026 Jeyna Head Spa — Kénitra, Maroc
+</footer>
+<!-- CHATBOT WIDGET -->
+<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#8a5a44] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#6f4636]">
+  💬
+</button>
+<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-[#e6d3c6]">
+  <div class="bg-[#8a5a44] text-white px-4 py-3 font-serif">Jeyna Assistant</div>
+  <div id="chat-messages" class="flex flex-col p-3 h-72 overflow-y-auto text-sm"></div>
+  <div class="flex border-t border-[#e6d3c6]">
+    <input id="chat-input" type="text" placeholder="Posez une question sur les prix..." class="flex-1 px-3 py-2 text-sm focus:outline-none">
+    <button id="chat-send" class="bg-[#8a5a44] text-white px-4 text-sm">Envoyer</button>
+  </div>
+</div>
+
+<script src="js/chatbot.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
