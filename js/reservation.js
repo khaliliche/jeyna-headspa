@@ -155,14 +155,15 @@ async function submitBooking(e) {
     }
 
     const service = SERVICES.find(s => s.key === selectedService);
+    const dateFormatted = formatFrenchDate(pendingSlot.date);
+
     const message =
-      `Bonjour Jeyna Head Spa 🌸%0A` +
-      `Nouvelle réservation :%0A` +
-      `Prestation : ${service.label}%0A` +
-      `Date : ${pendingSlot.date}%0A` +
-      `Heure : ${pendingSlot.time}%0A` +
-      `Nom : ${name}%0A` +
-      `Téléphone : ${phone}`;
+      `🌸 *Nouvelle réservation   Jeyna Head Spa*%0A%0A` +
+      `💆‍♀️ Prestation : *${service.label}* (${service.price} MAD)%0A` +
+      `📅 Date : *${dateFormatted}*%0A` +
+      `🕐 Heure : *${pendingSlot.time}*%0A%0A` +
+      `👤 Client : *${name}*%0A` +
+      `📞 Téléphone : *${phone}*`;
 
     window.open(`https://wa.me/212669556345?text=${message}`, '_blank');
     closeModal();
