@@ -17,6 +17,13 @@ function formatDate(d) {
   return `${y}-${m}-${day}`;
 }
 
+function formatFrenchDate(isoDate) {
+  const DAYS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function getWeekStart(offset) {
   const today = new Date();
   const day = today.getDay();
@@ -158,16 +165,19 @@ async function submitBooking(e) {
     const dateFormatted = formatFrenchDate(pendingSlot.date);
 
     const message =
-      `🌸 *Nouvelle réservation   Jeyna Head Spa*%0A%0A` +
-      `💆‍♀️ Prestation : *${service.label}* (${service.price} MAD)%0A` +
-      `📅 Date : *${dateFormatted}*%0A` +
-      `🕐 Heure : *${pendingSlot.time}*%0A%0A` +
-      `👤 Client : *${name}*%0A` +
-      `📞 Téléphone : *${phone}*`;
+      `*Nouvelle réservation — Jeyna Head Spa*\n\n` +
+      `Prestation : *${service.label}* (${service.price} MAD)\n` +
+      `Date : *${dateFormatted}*\n` +
+      `Heure : *${pendingSlot.time}*\n\n` +
+      `Client : *${name}*\n` +
+      `Téléphone : *${phone}*`;
 
-    window.open(`https://wa.me/212669556345?text=${message}`, '_blank');
+    window.open(`https://wa.me/212669556345?text=${encodeURIComponent(message)}`, '_blank');
     closeModal();
     loadGrid();
+  } catch (err) {
+    console.error(err);
+    alert('Erreur inattendue, vérifiez la console (F12).');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Confirmer';
