@@ -42,20 +42,27 @@ function renderServiceCards() {
     btn.addEventListener('click', () => {
       selectedService = btn.dataset.key;
       renderServiceCards();
-      document.getElementById('grid-section').classList.remove('hidden');
+      unlockGrid();
       loadGrid();
     });
   });
 }
 
+function unlockGrid() {
+  document.getElementById('grid').classList.remove('opacity-40', 'pointer-events-none');
+  document.getElementById('grid-lock').classList.add('hidden');
+  document.getElementById('step1-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-[#4A7856] text-white';
+  document.getElementById('step2-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-[#1F1B19] text-white';
+}
+
 async function loadGrid() {
   const gridEl = document.getElementById('grid');
-  gridEl.innerHTML = '<p class="text-center py-10 text-[#a8796a]">Chargement...</p>';
   const weekStart = getWeekStart(weekOffset);
   document.getElementById('week-label').textContent = `Semaine du ${weekStart}`;
+  const serviceForPreview = selectedService || 'decouverte';
 
   try {
-    const res = await fetch(`/api/availability?weekStart=${weekStart}&service=${selectedService}`);
+    const res = await fetch(`/api/availability?weekStart=${weekStart}&service=${serviceForPreview}`);
     const data = await res.json();
     renderGrid(data.days);
   } catch (e) {
@@ -98,7 +105,10 @@ function renderGrid(days) {
   gridEl.innerHTML = html;
 
   gridEl.querySelectorAll('td[data-date]').forEach(cell => {
-    cell.addEventListener('click', () => openModal(cell.dataset.date, cell.dataset.time));
+    cell.addEventListener('click', () => {
+      if (!selectedService) return;
+      openModal(cell.dataset.date, cell.dataset.time);
+    });
   });
 }
 
@@ -165,11 +175,14 @@ async function submitBooking(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   renderServiceCards();
+  loadGrid();
 
   document.getElementById('prev-week').addEventListener('click', () => {
+    if (!selectedService) return;
     if (weekOffset > 0) { weekOffset--; loadGrid(); }
   });
   document.getElementById('next-week').addEventListener('click', () => {
+    if (!selectedService) return;
     weekOffset++; loadGrid();
   });
   document.getElementById('booking-form').addEventListener('submit', submitBooking);
