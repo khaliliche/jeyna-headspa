@@ -98,8 +98,14 @@ function detectDate(q) {
 
   const dateMatch = q.match(/(\d{1,2})[\/\-](\d{1,2})/);
   if (dateMatch) {
+    // On ne devine JAMAIS l'année en silence. Avant, si la date tombait
+    // dans le passé, le code sautait automatiquement à l'année suivante —
+    // mais un même jour/mois tombe sur un jour de semaine différent d'une
+    // année à l'autre, ce qui affichait un jour totalement faux (ex: le
+    // 11/08 de cette année est un mardi, mais celui de l'année prochaine
+    // est un mercredi). On retourne toujours la date de l'année en cours ;
+    // si elle est passée, l'appelant doit le signaler clairement au client.
     const d = new Date(today.getFullYear(), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[1]));
-    if (d < today) d.setFullYear(d.getFullYear() + 1);
     return formatDateISO(d);
   }
 
@@ -127,6 +133,8 @@ async function checkAvailability(question, showTakenToo) {
   const q = normalize(question);
   const targetISO = detectDate(q);
   if (!targetISO) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"heures réservées mardi\".";
+  const todayISO = formatDateISO(new Date(new Date().setHours(0,0,0,0)));
+  if (targetISO < todayISO) return "Cette date est déjà passée 🙏 Donnez-moi une date à venir.";
   if (isoToDateObj(targetISO).getDay() === 1) return "Nous sommes fermés le lundi 🙏";
 
   const serviceUsed = detectServiceKey(q) || "decouverte";
@@ -198,6 +206,8 @@ async function handleBookingStep(input) {
   if (booking.step === 'date') {
     const dateISO = detectDate(q);
     if (!dateISO) return "Je n'ai pas compris la date. Essayez : \"demain\", \"mardi\", ou \"20/08\".";
+    const todayISO = formatDateISO(new Date(new Date().setHours(0,0,0,0)));
+    if (dateISO < todayISO) return "Cette date est déjà passée 🙏 Choisissez une date à venir.";
     if (isoToDateObj(dateISO).getDay() === 1) return "Nous sommes fermés le lundi 🙏 Choisissez un autre jour.";
     booking.date = dateISO;
     booking.step = 'time';
@@ -421,8 +431,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedHistory = sessionStorage.getItem('jeyna_chat_history');
   const savedBooking = sessionStorage.getItem('jeyna_chat_booking');
 
+  // Un ancien état de réservation stocké dans sessionStorage (par ex. testé
+  // avant une mise à jour du code, ou une date mal formée) ne doit JAMAIS
+  // être réutilisé tel quel : ça causait des dates fausses et de faux
+  // "succès" de réservation sur une mauvaise date. On valide strictement
+  // la forme avant de faire confiance à quoi que ce soit.
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  const VALID_SERVICE_KEYS = tarifs.map(t => t.key);
+  const VALID_STEPS = ['service', 'date', 'time', 'name', 'phone', 'confirming'];
+
+  function isValidBookingState(b) {
+    if (!b || typeof b !== 'object') return false;
+    if (b.active === false) return true; // état vide/inactif toujours valide
+    if (!VALID_STEPS.includes(b.step)) return false;
+    if (b.service !== null && !VALID_SERVICE_KEYS.includes(b.service)) return false;
+    if (b.date !== null && !ISO_DATE_RE.test(b.date)) return false;
+    return true;
+  }
+
   if (savedBooking) {
-    try { booking = JSON.parse(savedBooking); } catch (e) {}
+    try {
+      const parsed = JSON.parse(savedBooking);
+      if (isValidBookingState(parsed)) {
+        booking = parsed;
+      } else {
+        resetBooking();
+        sessionStorage.removeItem('jeyna_chat_booking');
+      }
+    } catch (e) {
+      resetBooking();
+      sessionStorage.removeItem('jeyna_chat_booking');
+    }
   }
 
   function attachQuickBook() {
