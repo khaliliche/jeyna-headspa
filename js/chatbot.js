@@ -47,14 +47,23 @@ function formatDateISO(d) {
   return `${y}-${m}-${day}`;
 }
 
-function getTuesdayWeekStart(targetDate) {
+// Dates de réservation sont TOUJOURS des chaînes "YYYY-MM-DD" en mémoire et
+// en sessionStorage. Jamais un objet Date — c'est ce qui causait le bug où,
+// après un refresh de page en pleine réservation, la date redevenait du
+// texte au lieu d'un objet Date et cassait tout silencieusement.
+function isoToDateObj(iso) {
+  return new Date(iso + 'T00:00:00');
+}
+
+function getTuesdayWeekStartISO(targetISO) {
+  const targetDate = isoToDateObj(targetISO);
   const day = targetDate.getDay();
   const diffToMonday = (day + 6) % 7;
   const monday = new Date(targetDate);
   monday.setDate(targetDate.getDate() - diffToMonday);
   const tuesday = new Date(monday);
   tuesday.setDate(monday.getDate() + 1);
-  return tuesday;
+  return formatDateISO(tuesday);
 }
 
 function detectServiceKey(q) {
@@ -68,12 +77,12 @@ function detectDate(q) {
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  if (q.includes("aujourd") || q.includes("ajd")) return today;
+  if (q.includes("aujourd") || q.includes("ajd")) return formatDateISO(today);
   if (q.includes("demain") || q.includes("dmn")) {
-    const d = new Date(today); d.setDate(d.getDate() + 1); return d;
+    const d = new Date(today); d.setDate(d.getDate() + 1); return formatDateISO(d);
   }
   if (q.includes("apres demain") || q.includes("aprs demain")) {
-    const d = new Date(today); d.setDate(d.getDate() + 2); return d;
+    const d = new Date(today); d.setDate(d.getDate() + 2); return formatDateISO(d);
   }
 
   for (let i = 0; i < DAY_NAMES_FULL.length; i++) {
@@ -83,7 +92,7 @@ function detectDate(q) {
       let diff = (i - currentDay + 7) % 7;
       if (diff === 0) diff = 7;
       d.setDate(d.getDate() + diff);
-      return d;
+      return formatDateISO(d);
     }
   }
 
@@ -91,7 +100,7 @@ function detectDate(q) {
   if (dateMatch) {
     const d = new Date(today.getFullYear(), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[1]));
     if (d < today) d.setFullYear(d.getFullYear() + 1);
-    return d;
+    return formatDateISO(d);
   }
 
   return null;
@@ -107,25 +116,24 @@ function normalizeTimeInput(q) {
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-async function fetchAvailabilityDay(serviceKey, targetDate) {
-  const weekStart = formatDateISO(getTuesdayWeekStart(targetDate));
+async function fetchAvailabilityDay(serviceKey, targetISO) {
+  const weekStart = getTuesdayWeekStartISO(targetISO);
   const res = await fetch(`/api/availability?weekStart=${weekStart}&service=${serviceKey}`);
   const data = await res.json();
-  const targetISO = formatDateISO(targetDate);
   return data.days.find(d => d.date === targetISO);
 }
 
 async function checkAvailability(question, showTakenToo) {
   const q = normalize(question);
-  const targetDate = detectDate(q);
-  if (!targetDate) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"heures réservées mardi\".";
-  if (targetDate.getDay() === 1) return "Nous sommes fermés le lundi 🙏";
+  const targetISO = detectDate(q);
+  if (!targetISO) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"heures réservées mardi\".";
+  if (isoToDateObj(targetISO).getDay() === 1) return "Nous sommes fermés le lundi 🙏";
 
   const serviceUsed = detectServiceKey(q) || "decouverte";
   const serviceLabel = tarifs.find(t => t.key === serviceUsed)?.nom || "Découverte";
 
   try {
-    const day = await fetchAvailabilityDay(serviceUsed, targetDate);
+    const day = await fetchAvailabilityDay(serviceUsed, targetISO);
     if (!day) return "Jour introuvable, réessayez 🙏";
 
     const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
@@ -151,7 +159,7 @@ async function checkAvailability(question, showTakenToo) {
 
 function formatFrenchDate(isoDate) {
   const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
-  const d = new Date(isoDate + 'T00:00:00');
+  const d = isoToDateObj(isoDate);
   return `${DAY_NAMES_LABEL[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
@@ -188,13 +196,13 @@ async function handleBookingStep(input) {
   }
 
   if (booking.step === 'date') {
-    const date = detectDate(q);
-    if (!date) return "Je n'ai pas compris la date. Essayez : \"demain\", \"mardi\", ou \"20/08\".";
-    if (date.getDay() === 1) return "Nous sommes fermés le lundi 🙏 Choisissez un autre jour.";
-    booking.date = date;
+    const dateISO = detectDate(q);
+    if (!dateISO) return "Je n'ai pas compris la date. Essayez : \"demain\", \"mardi\", ou \"20/08\".";
+    if (isoToDateObj(dateISO).getDay() === 1) return "Nous sommes fermés le lundi 🙏 Choisissez un autre jour.";
+    booking.date = dateISO;
     booking.step = 'time';
 
-    const day = await fetchAvailabilityDay(booking.service, date);
+    const day = await fetchAvailabilityDay(booking.service, dateISO);
     const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
     if (freeSlots.length === 0) {
       booking.step = 'date';
@@ -246,7 +254,7 @@ async function finalizeBooking() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         service: booking.service,
-        date: formatDateISO(booking.date),
+        date: booking.date,
         time: booking.time,
         name: booking.name,
         phone: booking.phone
@@ -255,13 +263,28 @@ async function finalizeBooking() {
     const data = await res.json();
 
     if (!res.ok) {
+      // Créneau pris entre-temps (ex: quelqu'un d'autre vient de réserver).
+      // On repasse à l'étape 'time' et on rafraîchit la liste des heures
+      // libres pour ce jour, plutôt que de laisser l'utilisateur retaper
+      // une heure qui ne sera de toute façon plus disponible.
       const failMsg = data.error || "Ce créneau vient d'être pris.";
       booking.step = 'time';
-      return `${failMsg} Donnez-moi une autre heure.`;
+      try {
+        const day = await fetchAvailabilityDay(booking.service, booking.date);
+        const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
+        window.loadGrid?.();
+        if (freeSlots.length === 0) {
+          booking.step = 'date';
+          return `${failMsg} Il ne reste plus aucun créneau libre ce jour-là 😔 Choisissez un autre jour.`;
+        }
+        return `${failMsg} Créneaux encore libres : ${freeSlots.join(", ")}<br>Quelle heure préférez-vous ?`;
+      } catch (e2) {
+        return `${failMsg} Donnez-moi une autre heure.`;
+      }
     }
 
     const service = tarifs.find(t => t.key === booking.service);
-    const dateFormatted = formatFrenchDate(formatDateISO(booking.date));
+    const dateFormatted = formatFrenchDate(booking.date);
 
     const message =
       `*Nouvelle réservation — Jeyna Head Spa*\n\n` +
@@ -272,6 +295,11 @@ async function finalizeBooking() {
       `Téléphone : *${booking.phone}*`;
 
     window.open(`https://wa.me/212669556345?text=${encodeURIComponent(message)}`, '_blank');
+
+    // Rafraîchit la grille visuelle sur la même page pour que le créneau
+    // apparaisse rouge immédiatement, sans que l'utilisateur ait besoin
+    // de recharger la page. loadGrid() vient de js/reservation.js.
+    window.loadGrid?.();
 
     const summary = `Réservation confirmée ✓<br><b>${service.nom}</b> — ${dateFormatted} à ${booking.time}<br>Un message WhatsApp s'ouvre pour finaliser avec nous.`;
     resetBooking();

@@ -1,6 +1,4 @@
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL);
+import { Pool } from '@neondatabase/serverless';
 
 const SERVICES = {
   decouverte: { label: "Découverte", slots: 2 },
@@ -31,60 +29,84 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
+  const { service, date, time, name, phone } = req.body;
+
+  if (!service || !SERVICES[service] || !date || !time || !name || !phone) {
+    return res.status(400).json({ error: 'Champs manquants' });
+  }
+
+  const dObj = new Date(date + 'T00:00:00');
+  if (dObj.getDay() === 1) {
+    return res.status(400).json({ error: 'Fermé le lundi' });
+  }
+
+  const durationSlots = SERVICES[service].slots;
+  const durationMin = durationSlots * SLOT_MINUTES;
+  const startIdx = timeToSlotIndex(time);
+
+  if (startIdx < 0 || startIdx + durationSlots > SLOTS_PER_DAY) {
+    return res.status(400).json({ error: 'Créneau invalide' });
+  }
+
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const client = await pool.connect();
+
   try {
-    const { service, date, time, name, phone } = req.body;
+    await client.query('BEGIN');
 
-    if (!service || !SERVICES[service] || !date || !time || !name || !phone) {
-      return res.status(400).json({ error: 'Champs manquants' });
-    }
+    // Verrouille cette date précise pendant toute la transaction.
+    // Si une autre requête (chat OU grille visuelle) essaie de réserver
+    // la même date en même temps, elle attend que celle-ci finisse
+    // (COMMIT ou ROLLBACK) avant de vérifier la disponibilité.
+    // C'est ce qui empêche le double-booking, même en cas de clics simultanés.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [date]);
 
-    const dObj = new Date(date + 'T00:00:00');
-    if (dObj.getDay() === 1) {
-      return res.status(400).json({ error: 'Fermé le lundi' });
-    }
-
-    const durationSlots = SERVICES[service].slots;
-    const durationMin = durationSlots * SLOT_MINUTES;
-    const startIdx = timeToSlotIndex(time);
-
-    if (startIdx < 0 || startIdx + durationSlots > SLOTS_PER_DAY) {
-      return res.status(400).json({ error: 'Créneau invalide' });
-    }
-
-    const existing = await sql`
-      SELECT start_time, duration_min FROM reservations WHERE date = ${date}::date
-    `;
+    const { rows: existing } = await client.query(
+      'SELECT start_time, duration_min FROM reservations WHERE date = $1::date',
+      [date]
+    );
 
     const counts = new Array(SLOTS_PER_DAY).fill(0);
     for (const row of existing) {
-      const s = timeToSlotIndex(String(row.start_time).slice(0,5));
+      const s = timeToSlotIndex(String(row.start_time).slice(0, 5));
       const span = Math.round(row.duration_min / SLOT_MINUTES);
       for (let j = s; j < s + span && j < SLOTS_PER_DAY; j++) {
         if (j >= 0) counts[j]++;
       }
     }
 
+    let conflict = false;
     for (let j = startIdx; j < startIdx + durationSlots; j++) {
-      if (counts[j] >= 1) {
-        return res.status(409).json({ error: "Ce créneau vient d'être pris, choisissez-en un autre." });
-      }
+      if (counts[j] >= 1) { conflict = true; break; }
     }
-    const poste = 1;
 
+    if (conflict) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ error: "Ce créneau vient d'être pris, choisissez-en un autre." });
+    }
+
+    const poste = 1;
     const startTime = `${time}:00`;
     const endTime = addMinutes(time, durationMin);
 
-    await sql`
-      INSERT INTO reservations (service, duration_min, date, start_time, end_time, poste, name, phone)
-      VALUES (${service}, ${durationMin}, ${date}, ${startTime}, ${endTime}, ${poste}, ${name}, ${phone})
-    `;
+    await client.query(
+      `INSERT INTO reservations (service, duration_min, date, start_time, end_time, poste, name, phone)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [service, durationMin, date, startTime, endTime, poste, name, phone]
+    );
+
+    await client.query('COMMIT');
 
     res.status(200).json({
       success: true,
       summary: { service: SERVICES[service].label, date, time }
     });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
+  } finally {
+    client.release();
+    await pool.end();
   }
 }
