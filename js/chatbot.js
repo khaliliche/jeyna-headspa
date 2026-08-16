@@ -9,17 +9,13 @@ const tarifs = [
     desc: "Soin hydratant, gommage du cuir chevelu, botox capillaire, fumigation, massage crânien approfondi, massage des mains, soin du visage" },
   { key: "premium", nom: "Premium Jeyna", duree: "90 min", prix: 550,
     desc: "Rituel Head Spa complet, gommage du cuir chevelu, fumigation prolongée, massage crânien complet, massage nuque/épaules/mains, soin du visage" },
-  { key: null, nom: "Brushing", duree: "-", prix: "à partir de 25",
-    desc: "Selon la longueur et l'épaisseur des cheveux" },
-  { key: null, nom: "Lissage au tanin", duree: "-", prix: "à partir de 900",
-    desc: "Selon la longueur, l'épaisseur et la nature des cheveux" }
 ];
 
 const DAY_NAMES_FULL = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const DAY_NAMES_LABEL = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
 
 function normalize(str) {
-  return str.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function formatDateISO(d) {
@@ -39,9 +35,10 @@ function getTuesdayWeekStart(targetDate) {
   return tuesday;
 }
 
-function detectService(q) {
+function detectServiceKey(q) {
+  const numMatch = q.match(/^[1-5]$/);
+  if (numMatch) return tarifs[parseInt(numMatch[0]) - 1].key;
   for (const t of tarifs) {
-    if (!t.key) continue;
     if (q.includes(normalize(t.nom.split(" ")[0])) || q.includes(normalize(t.nom))) {
       return t.key;
     }
@@ -79,53 +76,194 @@ function detectDate(q) {
   return null;
 }
 
+function normalizeTimeInput(q) {
+  const clean = q.replace(/\s/g, '').replace('h', ':');
+  const match = clean.match(/^(\d{1,2}):?(\d{0,2})$/);
+  if (!match) return null;
+  const h = parseInt(match[1]);
+  const m = match[2] ? parseInt(match[2]) : 0;
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+async function fetchAvailabilityDay(serviceKey, targetDate) {
+  const weekStart = formatDateISO(getTuesdayWeekStart(targetDate));
+  const res = await fetch(`/api/availability?weekStart=${weekStart}&service=${serviceKey}`);
+  const data = await res.json();
+  const targetISO = formatDateISO(targetDate);
+  return data.days.find(d => d.date === targetISO);
+}
+
+// ---------- Simple price/info lookup (non-booking questions) ----------
 async function checkAvailability(question) {
   const q = normalize(question);
   const targetDate = detectDate(q);
+  if (!targetDate) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"places libres mardi\".";
+  if (targetDate.getDay() === 1) return "Nous sommes fermés le lundi 🙏";
 
-  if (!targetDate) {
-    return "Pour vérifier les disponibilités, précisez un jour 🙏 Exemple : <i>\"dispo demain\"</i>, <i>\"places libres mardi\"</i>, ou <i>\"créneaux le 15/08\"</i>.";
-  }
-
-  if (targetDate.getDay() === 1) {
-    return "Nous sommes fermés le lundi 🙏 Choisissez un autre jour (mardi à dimanche, 10h-20h).";
-  }
-
-  let serviceKey = detectService(q);
-  const serviceUsed = serviceKey || "decouverte";
+  const serviceUsed = detectServiceKey(q) || "decouverte";
   const serviceLabel = tarifs.find(t => t.key === serviceUsed)?.nom || "Découverte";
 
   try {
-    const weekStart = formatDateISO(getTuesdayWeekStart(targetDate));
-    const res = await fetch(`/api/availability?weekStart=${weekStart}&service=${serviceUsed}`);
-    const data = await res.json();
-
-    const targetISO = formatDateISO(targetDate);
-    const day = data.days.find(d => d.date === targetISO);
-
-    if (!day) {
-      return "Je n'ai pas trouvé ce jour, réessayez avec une autre date 🙏";
-    }
-
+    const day = await fetchAvailabilityDay(serviceUsed, targetDate);
+    if (!day) return "Jour introuvable, réessayez 🙏";
     const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
-
     if (freeSlots.length === 0) {
-      return `Aucun créneau libre le <b>${day.label}</b> pour <b>${serviceLabel}</b> 😔 Essayez un autre jour ou une <a href="reservation.html" class="underline text-[#B76E4F]">autre prestation</a>.`;
+      return `Aucun créneau libre le <b>${day.label}</b> pour <b>${serviceLabel}</b> 😔`;
     }
-
     const shown = freeSlots.slice(0, 8).join(", ");
-    const more = freeSlots.length > 8 ? ` (+${freeSlots.length - 8} autres)` : "";
-
-    return `Le <b>${day.label}</b>, pour <b>${serviceLabel}</b>, voici les créneaux libres :<br>🟢 ${shown}${more}<br><br>Réservez directement ici 👉 <a href="reservation.html" class="underline text-[#B76E4F]">page réservation</a>`;
+    return `Le <b>${day.label}</b>, pour <b>${serviceLabel}</b> :<br>🟢 ${shown}<br><br>Tapez <i>"je veux réserver"</i> pour prendre rendez-vous directement ici.`;
   } catch (e) {
-    return "Erreur en vérifiant les disponibilités, réessayez dans un instant 🙏";
+    return "Erreur, réessayez dans un instant 🙏";
   }
 }
 
+function formatFrenchDate(isoDate) {
+  const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${DAY_NAMES_LABEL[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ---------- Guided booking conversation ----------
+let booking = { active: false, step: null, service: null, date: null, time: null, name: null, phone: null };
+
+function resetBooking() {
+  booking = { active: false, step: null, service: null, date: null, time: null, name: null, phone: null };
+}
+
+function serviceListText() {
+  return tarifs.map((t, i) => `${i + 1}. ${t.nom} — ${t.duree} — ${t.prix} MAD`).join("<br>");
+}
+
+function startBooking() {
+  booking = { active: true, step: 'service', service: null, date: null, time: null, name: null, phone: null };
+  return `Parfait, réservons ensemble 🌸<br>Quelle prestation souhaitez-vous ?<br>${serviceListText()}<br><br><i>(tapez le nom ou le numéro)</i>`;
+}
+
+async function handleBookingStep(input) {
+  const q = normalize(input);
+
+  if (q.includes("annul") || q === "stop") {
+    resetBooking();
+    return "Réservation annulée. Dites-moi si vous voulez recommencer 🙏";
+  }
+
+  if (booking.step === 'service') {
+    const key = detectServiceKey(q);
+    if (!key) return `Je n'ai pas reconnu cette prestation. Choisissez parmi :<br>${serviceListText()}`;
+    booking.service = key;
+    booking.step = 'date';
+    return `Très bien : <b>${tarifs.find(t => t.key === key).nom}</b>.<br>Quel jour souhaitez-vous ? <i>(ex: demain, mardi, 20/08)</i>`;
+  }
+
+  if (booking.step === 'date') {
+    const date = detectDate(q);
+    if (!date) return "Je n'ai pas compris la date. Essayez : \"demain\", \"mardi\", ou \"20/08\".";
+    if (date.getDay() === 1) return "Nous sommes fermés le lundi 🙏 Choisissez un autre jour.";
+    booking.date = date;
+    booking.step = 'time';
+
+    const day = await fetchAvailabilityDay(booking.service, date);
+    const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
+    if (freeSlots.length === 0) {
+      booking.step = 'date';
+      return `Aucun créneau libre le ${day.label} pour cette prestation 😔 Choisissez un autre jour.`;
+    }
+    return `Le <b>${day.label}</b>, voici les créneaux libres :<br>🟢 ${freeSlots.join(", ")}<br><br>Quelle heure préférez-vous ?`;
+  }
+
+  if (booking.step === 'time') {
+    const time = normalizeTimeInput(q);
+    if (!time) return "Format non reconnu. Exemple : \"14:00\" ou \"14h30\".";
+
+    const day = await fetchAvailabilityDay(booking.service, booking.date);
+    const slot = day.slots.find(s => s.time === time);
+
+    if (!slot) return "Cette heure n'existe pas dans nos horaires (10:00 à 19:30). Réessayez.";
+    if (slot.status !== 'available') {
+      const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
+      if (freeSlots.length === 0) return "Ce créneau est complet, et plus aucun n'est libre ce jour-là 😔 Choisissez un autre jour.";
+      return `Ce créneau est complet 😔 Créneaux encore libres : ${freeSlots.join(", ")}<br>Quelle heure préférez-vous ?`;
+    }
+
+    booking.time = time;
+    booking.step = 'name';
+    return "Parfait, ce créneau est libre ✓<br>Quel est votre nom complet ?";
+  }
+
+  if (booking.step === 'name') {
+    if (input.trim().length < 2) return "Merci d'indiquer votre nom complet.";
+    booking.name = input.trim();
+    booking.step = 'phone';
+    return "Et votre numéro de téléphone ?";
+  }
+
+  if (booking.step === 'phone') {
+    if (input.trim().length < 8) return "Merci d'indiquer un numéro de téléphone valide.";
+    booking.phone = input.trim();
+    booking.step = 'confirming';
+    return await finalizeBooking();
+  }
+
+  return "Dites-moi si vous voulez continuer ou tapez \"annuler\".";
+}
+
+async function finalizeBooking() {
+  try {
+    const res = await fetch('/api/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service: booking.service,
+        date: formatDateISO(booking.date),
+        time: booking.time,
+        name: booking.name,
+        phone: booking.phone
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      const failMsg = data.error || "Ce créneau vient d'être pris.";
+      booking.step = 'time';
+      return `${failMsg} Donnez-moi une autre heure.`;
+    }
+
+    const service = tarifs.find(t => t.key === booking.service);
+    const dateFormatted = formatFrenchDate(formatDateISO(booking.date));
+
+    const message =
+      `*Nouvelle réservation — Jeyna Head Spa*\n\n` +
+      `Prestation : *${service.nom}* (${service.prix} MAD)\n` +
+      `Date : *${dateFormatted}*\n` +
+      `Heure : *${booking.time}*\n\n` +
+      `Client : *${booking.name}*\n` +
+      `Téléphone : *${booking.phone}*`;
+
+    window.open(`https://wa.me/212669556345?text=${encodeURIComponent(message)}`, '_blank');
+
+    const summary = `Réservation confirmée ✓<br><b>${service.nom}</b> — ${dateFormatted} à ${booking.time}<br>Un message WhatsApp s'ouvre pour finaliser avec nous.`;
+    resetBooking();
+    return summary;
+  } catch (e) {
+    booking.step = 'time';
+    return "Erreur réseau, réessayez avec une autre heure.";
+  }
+}
+
+// ---------- Main router ----------
 async function repondre(question) {
   const q = normalize(question);
 
-  if (q.includes("dispo") || q.includes("libre") || q.includes("creneau") || q.includes("reste") || (q.includes("place") && !q.includes("remplace"))) {
+  if (booking.active) {
+    return await handleBookingStep(question);
+  }
+
+  if (q.includes("reserv") || q.includes("rendez") || q.includes("rdv")) {
+    return startBooking();
+  }
+
+  if (q.includes("dispo") || q.includes("libre") || q.includes("creneau") || (q.includes("place") && !q.includes("remplace"))) {
     return await checkAvailability(question);
   }
 
@@ -135,9 +273,7 @@ async function repondre(question) {
   }
 
   if (q.includes("prix") || q.includes("tarif") || q.includes("combien") || q.includes("liste")) {
-    return "Voici nos prestations :<br>" + tarifs.map(t =>
-      `• ${t.nom} (${t.duree}) — ${t.prix} MAD`
-    ).join("<br>");
+    return "Voici nos prestations :<br>" + tarifs.map(t => `• ${t.nom} (${t.duree}) — ${t.prix} MAD`).join("<br>");
   }
 
   if (q.includes("adresse") || q.includes("ou") || q.includes("localisation")) {
@@ -148,11 +284,7 @@ async function repondre(question) {
     return "Nous sommes ouverts du mardi au dimanche, de 10h00 à 20h00. Fermé le lundi.";
   }
 
-  if (q.includes("reserv") || q.includes("rendez")) {
-    return `Vous pouvez réserver directement ici 👉 <a href="reservation.html" class="underline text-[#B76E4F]">page réservation</a>`;
-  }
-
-  return `Je n'ai pas compris 🙏 Vous pouvez demander : "prix Signature Jeyna", "dispo demain", "créneaux libres mardi", "adresse", ou réserver directement sur la <a href="reservation.html" class="underline text-[#B76E4F]">page réservation</a>.`;
+  return `Je n'ai pas compris 🙏 Vous pouvez demander : "prix Signature Jeyna", "dispo demain", ou tapez <i>"je veux réserver"</i> pour prendre rendez-vous directement ici.`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -164,9 +296,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!toggle) return;
 
+  const sign = document.getElementById("chat-sign");
+
   toggle.addEventListener("click", () => {
     box.classList.toggle("hidden");
+    if (sign) sign.classList.toggle("hidden");
   });
+
+  const closeBtn = document.getElementById("chat-close");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      box.classList.add("hidden");
+      if (sign) sign.classList.remove("hidden");
+    });
+  }
 
   function addMsg(html, fromUser) {
     const div = document.createElement("div");
@@ -191,9 +334,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   send.addEventListener("click", handleSend);
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleSend();
-  });
+  input.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSend(); });
 
-  addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Demandez-moi un prix, ou <i>\"dispo demain\"</i> pour voir les créneaux libres.", false);
+  addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Je peux répondre à vos questions ou prendre votre rendez-vous directement ici.", false);
+  addMsg('<button id="quick-book-btn" class="w-full bg-[#1F1B19] text-white rounded-sm py-2 text-sm mt-1">📅 Réserver maintenant</button>', false);
+  document.getElementById('quick-book-btn').addEventListener('click', async () => {
+    addMsg("Réserver maintenant", true);
+    const response = startBooking();
+    addMsg(response, false);
+  });
 });

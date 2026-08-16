@@ -42,6 +42,7 @@
         et rituels de relaxation, pensés pour révéler la santé de vos cheveux.
       </p>
       <a href="reservation.html" class="btn-primary">Prendre rendez-vous</a>
+      <p class="text-xs text-[#4A423D] mt-4">ou discutez avec notre assistant 💬 en bas à droite</p>
     </div>
     <div class="hidden md:flex justify-center reveal">
       <svg class="line-motif" width="360" height="440" viewBox="0 0 360 440" xmlns="http://www.w3.org/2000/svg">
@@ -173,13 +174,25 @@
 </footer>
 
 <!-- CHATBOT WIDGET -->
-<button id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-[#1F1B19] text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl hover:bg-[#B76E4F] transition">💬</button>
-<div id="chat-box" class="hidden fixed bottom-24 right-6 z-50 w-80 bg-white rounded-sm shadow-xl flex flex-col overflow-hidden border border-[#E8DED2]">
-  <div class="bg-[#1F1B19] text-white px-4 py-3 font-display text-lg">Jeyna Assistant</div>
-  <div id="chat-messages" class="flex flex-col p-3 h-72 overflow-y-auto text-sm"></div>
+<div class="fixed bottom-6 right-4 md:right-6 z-50 flex flex-col items-end gap-2">
+  <div id="chat-sign" class="bg-white text-[#1F1B19] text-xs md:text-sm px-4 py-2.5 rounded-full shadow-lg border border-[#E8DED2] max-w-[200px] text-center leading-snug">
+    pour réserver direct
+  </div>
+  <div class="relative">
+    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#4A7856] rounded-full animate-ping"></span>
+    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#4A7856] rounded-full"></span>
+    <button id="chat-toggle" class="bg-[#1F1B19] text-white rounded-full w-14 h-14 md:w-16 md:h-16 shadow-lg flex items-center justify-center text-2xl md:text-3xl hover:bg-[#B76E4F] transition">💬</button>
+  </div>
+</div>
+<div id="chat-box" class="hidden fixed bottom-24 right-4 left-4 md:left-auto md:right-6 z-50 md:w-96 bg-white rounded-sm shadow-2xl flex flex-col overflow-hidden border border-[#E8DED2] transition-all">
+  <div class="bg-[#1F1B19] text-white px-4 py-3.5 font-display text-lg flex items-center justify-between">
+    <span>Jeyna Assistant</span>
+    <button id="chat-close" class="text-white/70 hover:text-white text-sm">✕</button>
+  </div>
+  <div id="chat-messages" class="flex flex-col p-3 h-80 md:h-96 overflow-y-auto text-sm"></div>
   <div class="flex border-t border-[#E8DED2]">
-    <input id="chat-input" type="text" placeholder="Posez une question sur les prix..." class="flex-1 px-3 py-2 text-sm focus:outline-none">
-    <button id="chat-send" class="bg-[#1F1B19] text-white px-4 text-sm">Envoyer</button>
+    <input id="chat-input" type="text" placeholder="Écrivez votre message..." class="flex-1 px-3 py-3 text-sm focus:outline-none">
+    <button id="chat-send" class="bg-[#1F1B19] text-white px-4 text-sm font-medium">Envoyer</button>
   </div>
 </div>
 
