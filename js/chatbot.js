@@ -311,7 +311,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function addMsg(html, fromUser) {
+  function saveHistory() {
+    const items = Array.from(messages.children).map(div => ({
+      html: div.innerHTML,
+      fromUser: div.classList.contains('self-end')
+    }));
+    sessionStorage.setItem('jeyna_chat_history', JSON.stringify(items));
+    sessionStorage.setItem('jeyna_chat_booking', JSON.stringify(booking));
+  }
+
+  function addMsg(html, fromUser, skipSave) {
     const div = document.createElement("div");
     div.className = fromUser
       ? "bg-[#1F1B19] text-white self-end ml-auto rounded-sm px-3 py-2 mb-2 max-w-[80%]"
@@ -319,6 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     div.innerHTML = html;
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
+    if (!skipSave) saveHistory();
   }
 
   async function handleSend() {
@@ -331,16 +341,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const response = await repondre(val);
     thinkingMsg.innerHTML = response;
     messages.scrollTop = messages.scrollHeight;
+    saveHistory();
   }
 
   send.addEventListener("click", handleSend);
   input.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSend(); });
 
-  addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Je peux répondre à vos questions ou prendre votre rendez-vous directement ici.", false);
-  addMsg('<button id="quick-book-btn" class="w-full bg-[#1F1B19] text-white rounded-sm py-2 text-sm mt-1">📅 Réserver maintenant</button>', false);
-  document.getElementById('quick-book-btn').addEventListener('click', async () => {
-    addMsg("Réserver maintenant", true);
-    const response = startBooking();
-    addMsg(response, false);
-  });
+  // Restore previous conversation if it exists
+  const savedHistory = sessionStorage.getItem('jeyna_chat_history');
+  const savedBooking = sessionStorage.getItem('jeyna_chat_booking');
+
+  if (savedBooking) {
+    try { booking = JSON.parse(savedBooking); } catch (e) {}
+  }
+
+  if (savedHistory) {
+    try {
+      const items = JSON.parse(savedHistory);
+      items.forEach(item => addMsg(item.html, item.fromUser, true));
+    } catch (e) {
+      startFreshWelcome();
+    }
+  } else {
+    startFreshWelcome();
+  }
+
+  function startFreshWelcome() {
+    addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Je peux répondre à vos questions ou prendre votre rendez-vous directement ici.", false);
+    addMsg('<button id="quick-book-btn" class="w-full bg-[#1F1B19] text-white rounded-sm py-2 text-sm mt-1">📅 Réserver maintenant</button>', false);
+    attachQuickBook();
+  }
+
+  function attachQuickBook() {
+    const btn = document.getElementById('quick-book-btn');
+    if (btn) {
+      btn.addEventListener('click', async () => {
+        addMsg("Réserver maintenant", true);
+        const response = startBooking();
+        addMsg(response, false);
+      });
+    }
+  }
+
+  attachQuickBook();
 });
