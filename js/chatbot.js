@@ -1,18 +1,40 @@
 const tarifs = [
   { key: "decouverte", nom: "Découverte", duree: "30 min", prix: 180,
-    desc: "Shampoing, massage crânien, séchage rapide" },
+    desc: "Shampoing, massage crânien, séchage rapide",
+    aliases: ["decouverte", "decouvert", "basic", "simple", "rapide", "1"] },
   { key: "eveil", nom: "Éveil Scalp", duree: "40 min", prix: 250,
-    desc: "Soins du visage, shampoing, soin cheveux en profondeur, massage crânien" },
+    desc: "Soins du visage, shampoing, soin cheveux en profondeur, massage crânien",
+    aliases: ["eveil", "eveilscalp", "scalp", "eveil scalp", "2"] },
   { key: "beldi", nom: "Rituel Beldi Naturel", duree: "50 min", prix: 300,
-    desc: "Soins naturels au sidr/ghassoul, gommage du cuir chevelu, fumigation, massage crânien, massage des mains, soin du visage" },
+    desc: "Soins naturels au sidr/ghassoul, gommage du cuir chevelu, fumigation, massage crânien, massage des mains, soin du visage",
+    aliases: ["beldi", "rituel", "naturel", "ghassoul", "sidr", "rituel beldi", "3"] },
   { key: "signature", nom: "Signature Jeyna", duree: "60 min", prix: 400,
-    desc: "Soin hydratant, gommage du cuir chevelu, botox capillaire, fumigation, massage crânien approfondi, massage des mains, soin du visage" },
+    desc: "Soin hydratant, gommage du cuir chevelu, botox capillaire, fumigation, massage crânien approfondi, massage des mains, soin du visage",
+    aliases: ["signature", "botox", "signature jeyna", "4"] },
   { key: "premium", nom: "Premium Jeyna", duree: "90 min", prix: 550,
-    desc: "Rituel Head Spa complet, gommage du cuir chevelu, fumigation prolongée, massage crânien complet, massage nuque/épaules/mains, soin du visage" },
+    desc: "Rituel Head Spa complet, gommage du cuir chevelu, fumigation prolongée, massage crânien complet, massage nuque/épaules/mains, soin du visage",
+    aliases: ["premium", "complet", "vip", "luxe", "premium jeyna", "5"] },
 ];
 
 const DAY_NAMES_FULL = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 const DAY_NAMES_LABEL = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+
+// ---------- Intent keyword banks (extend these anytime) ----------
+const KW = {
+  booking: ["reserv", "rendez", "rdv", "book", "prendre rdv", "jveux reserv", "je veux reserv", "prise de rdv", "planifier", "programmer un", "fixer un"],
+  takenSlots: ["reserve", "occupe", "pris", "complet a", "plein", "quelles heures sont prises", "heures indisponibles", "quand c'est occupe", "deja pris"],
+  freeSlots: ["dispo", "libre", "creneau", "place", "quand", "il reste", "reste il", "possible a", "vous avez de la place", "y a t il de la place"],
+  price: ["prix", "tarif", "combien", "cout", "coute", "montant", "cest combien", "ca coute", "price", "cost"],
+  address: ["adresse", "localisation", "position", "situe", "trouve", "quartier", "ou etes", "ou vous etes", "google maps", "map", "lieu", "adress"],
+  hours: ["horaire", "ouvert", "ferme", "quand ouvre", "heure d'ouverture", "vous ouvrez", "jusqu'a quelle heure", "a quelle heure vous fermez"],
+  greeting: ["bonjour", "salut", "slt", "hello", "hi", "bsr", "bonsoir", "cc", "coucou"],
+  thanks: ["merci", "thanks", "thank you", "chokran"],
+  cancel: ["annul", "stop", "laisse tomber", "oublie", "je change d'avis"]
+};
+
+function matchesAny(text, keywords) {
+  return keywords.some(k => text.includes(normalize(k)));
+}
 
 function normalize(str) {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -36,12 +58,8 @@ function getTuesdayWeekStart(targetDate) {
 }
 
 function detectServiceKey(q) {
-  const numMatch = q.match(/^[1-5]$/);
-  if (numMatch) return tarifs[parseInt(numMatch[0]) - 1].key;
   for (const t of tarifs) {
-    if (q.includes(normalize(t.nom.split(" ")[0])) || q.includes(normalize(t.nom))) {
-      return t.key;
-    }
+    if (t.aliases.some(a => q.includes(normalize(a)))) return t.key;
   }
   return null;
 }
@@ -50,9 +68,12 @@ function detectDate(q) {
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  if (q.includes("aujourd")) return today;
-  if (q.includes("demain")) {
+  if (q.includes("aujourd") || q.includes("ajd")) return today;
+  if (q.includes("demain") || q.includes("dmn")) {
     const d = new Date(today); d.setDate(d.getDate() + 1); return d;
+  }
+  if (q.includes("apres demain") || q.includes("aprs demain")) {
+    const d = new Date(today); d.setDate(d.getDate() + 2); return d;
   }
 
   for (let i = 0; i < DAY_NAMES_FULL.length; i++) {
@@ -94,11 +115,10 @@ async function fetchAvailabilityDay(serviceKey, targetDate) {
   return data.days.find(d => d.date === targetISO);
 }
 
-// ---------- Simple price/info lookup (non-booking questions) ----------
-async function checkAvailability(question) {
+async function checkAvailability(question, showTakenToo) {
   const q = normalize(question);
   const targetDate = detectDate(q);
-  if (!targetDate) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"places libres mardi\".";
+  if (!targetDate) return "Précisez un jour 🙏 Exemple : \"dispo demain\", \"heures réservées mardi\".";
   if (targetDate.getDay() === 1) return "Nous sommes fermés le lundi 🙏";
 
   const serviceUsed = detectServiceKey(q) || "decouverte";
@@ -107,12 +127,23 @@ async function checkAvailability(question) {
   try {
     const day = await fetchAvailabilityDay(serviceUsed, targetDate);
     if (!day) return "Jour introuvable, réessayez 🙏";
+
     const freeSlots = day.slots.filter(s => s.status === 'available').map(s => s.time);
-    if (freeSlots.length === 0) {
-      return `Aucun créneau libre le <b>${day.label}</b> pour <b>${serviceLabel}</b> 😔`;
+    const takenSlots = day.slots.filter(s => s.status === 'full').map(s => s.time);
+
+    let response = `<b>${day.label}</b> — <i>${serviceLabel}</i><br><br>`;
+    response += freeSlots.length > 0
+      ? `🟢 Libres : ${freeSlots.slice(0, 10).join(", ")}<br>`
+      : `🟢 Libres : aucun créneau disponible<br>`;
+
+    if (showTakenToo) {
+      response += takenSlots.length > 0
+        ? `🔴 Réservés : ${takenSlots.join(", ")}<br>`
+        : `🔴 Réservés : aucun pour l'instant<br>`;
     }
-    const shown = freeSlots.slice(0, 8).join(", ");
-    return `Le <b>${day.label}</b>, pour <b>${serviceLabel}</b> :<br>🟢 ${shown}<br><br>Tapez <i>"je veux réserver"</i> pour prendre rendez-vous directement ici.`;
+
+    response += `<br>Tapez <i>"je veux réserver"</i> pour prendre rendez-vous directement ici.`;
+    return response;
   } catch (e) {
     return "Erreur, réessayez dans un instant 🙏";
   }
@@ -143,7 +174,7 @@ function startBooking() {
 async function handleBookingStep(input) {
   const q = normalize(input);
 
-  if (q.includes("annul") || q === "stop") {
+  if (matchesAny(q, KW.cancel)) {
     resetBooking();
     return "Réservation annulée. Dites-moi si vous voulez recommencer 🙏";
   }
@@ -259,32 +290,44 @@ async function repondre(question) {
     return await handleBookingStep(question);
   }
 
-  if (q.includes("reserv") || q.includes("rendez") || q.includes("rdv")) {
+  if (matchesAny(q, KW.booking)) {
     return startBooking();
   }
 
-  if (q.includes("dispo") || q.includes("libre") || q.includes("creneau") || (q.includes("place") && !q.includes("remplace"))) {
-    return await checkAvailability(question);
+  if (matchesAny(q, KW.takenSlots)) {
+    return await checkAvailability(question, true);
   }
 
-  const trouve = tarifs.find(t => q.includes(normalize(t.nom.split(" ")[0])) || q.includes(normalize(t.nom)));
+  if (matchesAny(q, KW.freeSlots)) {
+    return await checkAvailability(question, false);
+  }
+
+  const trouve = tarifs.find(t => t.aliases.some(a => q.includes(normalize(a))));
   if (trouve) {
     return `<b>${trouve.nom}</b> — ${trouve.duree} — <b>${trouve.prix} MAD</b><br>${trouve.desc}`;
   }
 
-  if (q.includes("prix") || q.includes("tarif") || q.includes("combien") || q.includes("liste")) {
+  if (matchesAny(q, KW.price)) {
     return "Voici nos prestations :<br>" + tarifs.map(t => `• ${t.nom} (${t.duree}) — ${t.prix} MAD`).join("<br>");
   }
 
-  if (q.includes("adresse") || q.includes("ou") || q.includes("localisation")) {
+  if (matchesAny(q, KW.address)) {
     return "📍 Résidence Kouta, 1er étage, 4 rue Ibn Tammam, Kénitra, Maroc";
   }
 
-  if (q.includes("horaire") || q.includes("ouvert")) {
+  if (matchesAny(q, KW.hours)) {
     return "Nous sommes ouverts du mardi au dimanche, de 10h00 à 20h00. Fermé le lundi.";
   }
 
-  return `Je n'ai pas compris 🙏 Vous pouvez demander : "prix Signature Jeyna", "dispo demain", ou tapez <i>"je veux réserver"</i> pour prendre rendez-vous directement ici.`;
+  if (matchesAny(q, KW.greeting)) {
+    return "Bonjour 👋 Comment puis-je vous aider ? Vous pouvez demander les prix, les disponibilités, ou réserver directement.";
+  }
+
+  if (matchesAny(q, KW.thanks)) {
+    return "Avec plaisir 🌸 N'hésitez pas si vous avez d'autres questions.";
+  }
+
+  return `Je n'ai pas compris 🙏 Vous pouvez demander : "prix Signature Jeyna", "dispo demain", "heures réservées mardi", ou tapez <i>"je veux réserver"</i>.`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -347,29 +390,11 @@ document.addEventListener("DOMContentLoaded", () => {
   send.addEventListener("click", handleSend);
   input.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSend(); });
 
-  // Restore previous conversation if it exists
   const savedHistory = sessionStorage.getItem('jeyna_chat_history');
   const savedBooking = sessionStorage.getItem('jeyna_chat_booking');
 
   if (savedBooking) {
     try { booking = JSON.parse(savedBooking); } catch (e) {}
-  }
-
-  if (savedHistory) {
-    try {
-      const items = JSON.parse(savedHistory);
-      items.forEach(item => addMsg(item.html, item.fromUser, true));
-    } catch (e) {
-      startFreshWelcome();
-    }
-  } else {
-    startFreshWelcome();
-  }
-
-  function startFreshWelcome() {
-    addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Je peux répondre à vos questions ou prendre votre rendez-vous directement ici.", false);
-    addMsg('<button id="quick-book-btn" class="w-full bg-[#1F1B19] text-white rounded-sm py-2 text-sm mt-1">📅 Réserver maintenant</button>', false);
-    attachQuickBook();
   }
 
   function attachQuickBook() {
@@ -383,5 +408,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  attachQuickBook();
+  function startFreshWelcome() {
+    addMsg("Bonjour 👋 Je suis l'assistant Jeyna Head Spa. Demandez-moi les dispos, les heures déjà réservées, ou prenez rendez-vous directement ici.", false);
+    addMsg('<button id="quick-book-btn" class="w-full bg-[#1F1B19] text-white rounded-sm py-2 text-sm mt-1">📅 Réserver maintenant</button>', false);
+    attachQuickBook();
+  }
+
+  if (savedHistory) {
+    try {
+      const items = JSON.parse(savedHistory);
+      items.forEach(item => addMsg(item.html, item.fromUser, true));
+      attachQuickBook();
+    } catch (e) {
+      startFreshWelcome();
+    }
+  } else {
+    startFreshWelcome();
+  }
 });
